@@ -1,4 +1,4 @@
-import React, { createContext, useState, useEffect, useContext } from 'react';
+import React, { createContext, useState, useEffect, useContext, useCallback } from 'react';
 import { authAPI } from '../services/api';
 
 const AuthContext = createContext();
@@ -16,16 +16,13 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [token, setToken] = useState(localStorage.getItem('token'));
 
-  useEffect(() => {
-    // Check if user is logged in on mount
-    if (token) {
-      fetchCurrentUser();
-    } else {
-      setLoading(false);
-    }
-  }, [token]);
+  const logout = useCallback(() => {
+    localStorage.removeItem('token');
+    setToken(null);
+    setUser(null);
+  }, []);
 
-  const fetchCurrentUser = async () => {
+  const fetchCurrentUser = useCallback(async () => {
     try {
       const response = await authAPI.getCurrentUser();
       setUser(response.data);
@@ -35,17 +32,23 @@ export const AuthProvider = ({ children }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [logout]);
+
+  useEffect(() => {
+    if (token) {
+      fetchCurrentUser();
+    } else {
+      setLoading(false);
+    }
+  }, [token, fetchCurrentUser]);
 
   const login = async (email, password) => {
     try {
       const response = await authAPI.login({ email, password });
-      const { token, user } = response.data;
-      
-      localStorage.setItem('token', token);
-      setToken(token);
-      setUser(user);
-      
+      const { token: newToken, user: newUser } = response.data;
+      localStorage.setItem('token', newToken);
+      setToken(newToken);
+      setUser(newUser);
       return { success: true };
     } catch (error) {
       return {
@@ -58,12 +61,10 @@ export const AuthProvider = ({ children }) => {
   const register = async (userData) => {
     try {
       const response = await authAPI.register(userData);
-      const { token, user } = response.data;
-      
-      localStorage.setItem('token', token);
-      setToken(token);
-      setUser(user);
-      
+      const { token: newToken, user: newUser } = response.data;
+      localStorage.setItem('token', newToken);
+      setToken(newToken);
+      setUser(newUser);
       return { success: true };
     } catch (error) {
       return {
@@ -71,12 +72,6 @@ export const AuthProvider = ({ children }) => {
         message: error.response?.data?.message || 'Registration failed',
       };
     }
-  };
-
-  const logout = () => {
-    localStorage.removeItem('token');
-    setToken(null);
-    setUser(null);
   };
 
   const value = {
