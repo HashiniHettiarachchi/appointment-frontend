@@ -17,7 +17,8 @@ const ApproveStaff = () => {
   const fetchPendingStaff = useCallback(async () => {
     try {
       const response = await axios.get(
-        "http://localhost:5000/api/users/staff/pending",
+        //"http://localhost:5000/api/users/staff/pending",
+        "https://appointment-backend-cune.vercel.app/api/users/staff/pending",
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setPendingStaff(response.data);
@@ -33,7 +34,8 @@ const ApproveStaff = () => {
   const fetchApprovedStaff = useCallback(async () => {
     try {
       const response = await axios.get(
-        "http://localhost:5000/api/users/staff",
+        //"http://localhost:5000/api/users/staff",
+        "https://appointment-backend-cune.vercel.app/api/users/staff",
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setApprovedStaff(response.data);
@@ -44,7 +46,8 @@ const ApproveStaff = () => {
 
   const fetchServices = useCallback(async () => {
     try {
-      const response = await axios.get("http://localhost:5000/api/services");
+      //const response = await axios.get("http://localhost:5000/api/services");
+      const response = await axios.get("https://appointment-backend-cune.vercel.app/api/users/staff");
       setServices(response.data);
     } catch (err) {
       console.error("Error fetching services:", err);
@@ -80,7 +83,8 @@ const ApproveStaff = () => {
 
     try {
       await axios.put(
-        `http://localhost:5000/api/users/staff/${staffId}/approve`,
+        //`http://localhost:5000/api/users/staff/${staffId}/approve`,
+        `https://appointment-backend-cune.vercel.app/api/users/staff/${staffId}/approve`,
         { specialization },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -112,7 +116,8 @@ const ApproveStaff = () => {
 
     try {
       await axios.put(
-        `http://localhost:5000/api/users/staff/${staffId}/reject`,
+      //`http://localhost:5000/api/users/staff/${staffId}/reject`,
+      `https://appointment-backend-cune.vercel.app/api/users/staff/${staffId}/reject`,
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );

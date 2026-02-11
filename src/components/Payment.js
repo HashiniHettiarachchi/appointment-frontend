@@ -82,7 +82,8 @@ const Payment = () => {
       
       // Confirm payment with backend
       await axios.post(
-        'http://localhost:5000/api/payments/confirm',
+        // 'http://localhost:5000/api/payments/confirm',
+        'https://appointment-backend-cune.vercel.app/api/payments/confirm',
         {
           appointmentId,
           paymentId,
