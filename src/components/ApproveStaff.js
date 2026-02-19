@@ -47,7 +47,7 @@ const ApproveStaff = () => {
   const fetchServices = useCallback(async () => {
     try {
       //const response = await axios.get("http://localhost:5000/api/services");
-      const response = await axios.get("https://appointment-backend-cune.vercel.app/api/users/staff");
+      const response = await axios.get("https://appointment-backend-cune.vercel.app/api/services");
       setServices(response.data);
     } catch (err) {
       console.error("Error fetching services:", err);
