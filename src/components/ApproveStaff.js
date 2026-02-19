@@ -13,12 +13,9 @@ const ApproveStaff = () => {
 
   const token = localStorage.getItem("token");
 
-  // ✅ Wrap fetch functions in useCallback
   const fetchPendingStaff = useCallback(async () => {
     try {
       const response = await axios.get(
-        //"http://localhost:5000/api/users/staff/pending",
-       // "https://appointment-backend-cune.vercel.app/api/users/staff/pending",
         "https://appointment-backend-wpie.vercel.app/api/users/staff/pending",
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -35,8 +32,6 @@ const ApproveStaff = () => {
   const fetchApprovedStaff = useCallback(async () => {
     try {
       const response = await axios.get(
-        //"http://localhost:5000/api/users/staff",
-        //"https://appointment-backend-cune.vercel.app/api/users/staff",
         "https://appointment-backend-wpie.vercel.app/api/users/staff",
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -48,9 +43,9 @@ const ApproveStaff = () => {
 
   const fetchServices = useCallback(async () => {
     try {
-      //const response = await axios.get("http://localhost:5000/api/services");
-     // const response = await axios.get("https://appointment-backend-cune.vercel.app/api/services");
-      const response = await axios.get("https://appointment-backend-wpie.vercel.app/api/services");
+      const response = await axios.get(
+        "https://appointment-backend-wpie.vercel.app/api/services"
+      );
       setServices(response.data);
     } catch (err) {
       console.error("Error fetching services:", err);
@@ -60,14 +55,12 @@ const ApproveStaff = () => {
     }
   }, []);
 
-  // ✅ useEffect with proper dependencies
   useEffect(() => {
     fetchPendingStaff();
     fetchApprovedStaff();
     fetchServices();
   }, [fetchPendingStaff, fetchApprovedStaff, fetchServices]);
 
-  // Handle dropdown selection
   const handleSelectSpecialization = (staffId, specialization) => {
     setSelectedSpecializations({
       ...selectedSpecializations,
@@ -75,7 +68,6 @@ const ApproveStaff = () => {
     });
   };
 
-  // Handle approve button click
   const handleApprove = async (staffId, staffName) => {
     const specialization = selectedSpecializations[staffId];
 
@@ -86,8 +78,6 @@ const ApproveStaff = () => {
 
     try {
       await axios.put(
-        //`http://localhost:5000/api/users/staff/${staffId}/approve`,
-        //`https://appointment-backend-cune.vercel.app/api/users/staff/${staffId}/approve`,
         `https://appointment-backend-wpie.vercel.app/api/users/staff/${staffId}/approve`,
         { specialization },
         { headers: { Authorization: `Bearer ${token}` } }
@@ -112,7 +102,6 @@ const ApproveStaff = () => {
     }
   };
 
-  // Handle reject button click
   const handleReject = async (staffId, staffName) => {
     if (!window.confirm(`Are you sure you want to reject ${staffName}?`)) {
       return;
@@ -120,9 +109,7 @@ const ApproveStaff = () => {
 
     try {
       await axios.put(
-      //`http://localhost:5000/api/users/staff/${staffId}/reject`,
-      //`https://appointment-backend-cune.vercel.app/api/users/staff/${staffId}/reject`,
-      `https://appointment-backend-wpie.vercel.app/api/users/staff/${staffId}/reject`,
+        `https://appointment-backend-wpie.vercel.app/api/users/staff/${staffId}/reject`,
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -148,8 +135,148 @@ const ApproveStaff = () => {
 
   return (
     <div className="approve-staff-container">
-      {/* Your JSX for pending and approved staff */}
-      {/* ... rest of your original JSX */}
+      <div className="page-header">
+        <h1>👥 Staff Approval Management</h1>
+        <p>Review and approve new staff member registrations</p>
+      </div>
+
+      {error && (
+        <div className="message error-message">
+          ❌ {error}
+        </div>
+      )}
+
+      {success && (
+        <div className="message success-message">
+          ✅ {success}
+        </div>
+      )}
+
+      {/* PENDING STAFF SECTION */}
+      <div className="section">
+        <div className="section-header">
+          <h2>⏳ Pending Approvals ({pendingStaff.length})</h2>
+          <p>Staff members waiting for your approval</p>
+        </div>
+
+        {pendingStaff.length === 0 ? (
+          <div className="empty-state">
+            <div className="empty-icon">✅</div>
+            <h3>No Pending Approvals</h3>
+            <p>All staff registrations have been reviewed!</p>
+          </div>
+        ) : (
+          <div className="table-container">
+            <table className="staff-table">
+              <thead>
+                <tr>
+                  <th>Staff Name</th>
+                  <th>Email</th>
+                  <th>Phone</th>
+                  <th>Registered Date</th>
+                  <th>Select Specialization</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {pendingStaff.map((staff) => (
+                  <tr key={staff._id}>
+                    <td>
+                      <div className="staff-name-cell">
+                        <span className="new-badge">NEW</span>
+                        <strong>{staff.name}</strong>
+                      </div>
+                    </td>
+                    <td>{staff.email}</td>
+                    <td>{staff.phone || "N/A"}</td>
+                    <td>{new Date(staff.createdAt).toLocaleDateString()}</td>
+                    <td>
+                      <select
+                        className="category-dropdown"
+                        value={selectedSpecializations[staff._id] || ""}
+                        onChange={(e) =>
+                          handleSelectSpecialization(staff._id, e.target.value)
+                        }
+                      >
+                        <option value="">-- Select Specialization --</option>
+                        {services.map((service) => (
+                          <option key={service._id} value={service.name}>
+                            {service.name} ({service.category})
+                          </option>
+                        ))}
+                      </select>
+                    </td>
+                    <td>
+                      <div className="action-buttons">
+                        <button
+                          className="btn-approve"
+                          onClick={() => handleApprove(staff._id, staff.name)}
+                          disabled={!selectedSpecializations[staff._id]}
+                        >
+                          ✓ Approve
+                        </button>
+                        <button
+                          className="btn-reject"
+                          onClick={() => handleReject(staff._id, staff.name)}
+                        >
+                          ✕ Reject
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+
+      {/* APPROVED STAFF SECTION */}
+      <div className="section">
+        <div className="section-header">
+          <h2>✅ Approved Staff ({approvedStaff.length})</h2>
+          <p>Currently active staff members</p>
+        </div>
+
+        {approvedStaff.length === 0 ? (
+          <div className="empty-state">
+            <div className="empty-icon">👥</div>
+            <h3>No Approved Staff Yet</h3>
+            <p>Approve pending staff to see them here</p>
+          </div>
+        ) : (
+          <div className="table-container">
+            <table className="staff-table">
+              <thead>
+                <tr>
+                  <th>Staff Name</th>
+                  <th>Email</th>
+                  <th>Specialization</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {approvedStaff.map((staff) => (
+                  <tr key={staff._id}>
+                    <td>
+                      <strong>{staff.name}</strong>
+                    </td>
+                    <td>{staff.email}</td>
+                    <td>
+                      <span className="specialization-badge">
+                        {staff.specialization || "Not Set"}
+                      </span>
+                    </td>
+                    <td>
+                      <span className="status-badge status-active">Active</span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
     </div>
   );
 };
