@@ -189,10 +189,12 @@ const Reports = () => {
       
       if (reportType === 'weekly') {
         //endpoint = 'http://localhost:5000/api/reports/weekly';
-        endpoint='https://appointment-backend-cune.vercel.app/api/reports/weekly';
+        //endpoint='https://appointment-backend-cune.vercel.app/api/reports/weekly';
+        endpoint='https://appointment-backend-wpie.vercel.app/api/reports/weekly';
       } else if (reportType === 'monthly') {
         //endpoint = 'http://localhost:5000/api/reports/monthly';
-        endpoint='https://appointment-backend-cune.vercel.app/api/reports/weekly';
+        //endpoint='https://appointment-backend-cune.vercel.app/api/reports/weekly';
+        endpoint='https://appointment-backend-wpie.vercel.app/api/reports/monthly';
       } else if (reportType === 'custom') {
         if (!customStartDate || !customEndDate) {
           setError('Please select both start and end dates for custom report');
@@ -200,7 +202,8 @@ const Reports = () => {
           return;
         }
         //endpoint = `http://localhost:5000/api/reports/custom?startDate=${customStartDate}&endDate=${customEndDate}`;
-        endpoint = `https://appointment-backend-cune.vercel.app/api/reports/custom?startDate=${customStartDate}&endDate=${customEndDate}`;
+        // endpoint = `https://appointment-backend-cune.vercel.app/api/reports/custom?startDate=${customStartDate}&endDate=${customEndDate}`;
+        endpoint = `https://appointment-backend-wpie.vercel.app/api/reports/custom?startDate=${customStartDate}&endDate=${customEndDate}`;
       }
 
       const response = await axios.get(endpoint, {
