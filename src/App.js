@@ -12,6 +12,7 @@ import AdminDashboard from './components/AdminDashboard';
 import ApproveStaff from './components/ApproveStaff';
 import Payment from './components/Payment';
 import Reports from './components/Reports';
+import { ConfigProvider } from './context/ConfigContext'; 
 import './App.css';
 
 // Protected Route Component
@@ -108,9 +109,11 @@ function AppContent() {
 
 function App() {
   return (
+    <ConfigProvider>
     <AuthProvider>
       <AppContent />
     </AuthProvider>
+    </ConfigProvider>
   );
 }
 
