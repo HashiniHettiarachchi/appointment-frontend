@@ -13,6 +13,7 @@ import ApproveStaff from './components/ApproveStaff';
 import Payment from './components/Payment';
 import Reports from './components/Reports';
 import { ConfigProvider } from './context/ConfigContext'; 
+import ConfigSettings from './components/ConfigSettings';
 import './App.css';
 
 // Protected Route Component
@@ -99,6 +100,15 @@ function AppContent() {
             }
           />
 
+          <Route
+          path="/config"
+          element={
+            <ProtectedRoute adminOnly={true}>
+              <ConfigSettings />
+            </ProtectedRoute>
+          }
+        />
+
           {/* 404 - Redirect to home */}
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
@@ -106,6 +116,7 @@ function AppContent() {
     </Router>
   );
 }
+
 
 function App() {
   return (
@@ -116,5 +127,7 @@ function App() {
     </ConfigProvider>
   );
 }
+
+
 
 export default App;
