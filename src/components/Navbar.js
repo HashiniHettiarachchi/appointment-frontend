@@ -46,7 +46,7 @@ const Navbar = () => {
                   <li className="navbar-item">
                     {/* <Link to="/staff-approve" className="navbar-link">Staff Approval</Link> */}
                     <Link to="/staff-approve" className="navbar-link">
-                    {getLabel('provider')} Approval  {/* ← Dynamic: "Staff Approval" */}
+                    {getLabel('provider')} Admin Approval  {/* ← Dynamic: "Staff Approval" */}
                     </Link>
                   </li>
                   <li className="navbar-item">
