@@ -33,7 +33,7 @@ const AppointmentList = () => {
 
     try {
       await appointmentsAPI.cancel(id);
-      fetchAppointments(); // Refresh list
+      fetchAppointments();
     } catch (err) {
       alert('Failed to cancel appointment');
       console.error(err);
@@ -43,7 +43,7 @@ const AppointmentList = () => {
   const handleUpdateStatus = async (id, newStatus) => {
     try {
       await appointmentsAPI.update(id, { status: newStatus });
-      fetchAppointments(); // Refresh list
+      fetchAppointments();
     } catch (err) {
       alert('Failed to update appointment status');
       console.error(err);
@@ -60,12 +60,26 @@ const AppointmentList = () => {
         paymentStatus: 'paid',
         paidAt: new Date().toISOString()
       });
-      fetchAppointments(); // Refresh list
+      fetchAppointments();
     } catch (err) {
       alert('Failed to update payment status');
       console.error(err);
     }
   };
+
+  // 🔥 FILTER LOGIC (IMPORTANT PART)
+  const activeAppointments = appointments.filter((appointment) => {
+    // Hide cancelled
+    if (appointment.status === 'cancelled') return false;
+
+    // Hide completed + paid
+    if (
+      appointment.status === 'completed' &&
+      appointment.paymentStatus === 'paid'
+    ) return false;
+
+    return true;
+  });
 
   const getStatusColor = (status) => {
     const colors = {
@@ -149,21 +163,25 @@ const AppointmentList = () => {
         </Link>
       </div>
 
-      {appointments.length === 0 ? (
+      {activeAppointments.length === 0 ? (
         <div className="no-appointments">
           <div className="no-appointments-icon">📅</div>
-          <h2>No appointments yet</h2>
-          <p>Book your first appointment to get started!</p>
+          <h2>No active appointments</h2>
+          <p>Book your next appointment!</p>
           <Link to="/services" className="browse-services-button">
             Browse Services
           </Link>
         </div>
       ) : (
         <div className="appointments-list">
-          {appointments.map((appointment) => (
+          {activeAppointments.map((appointment) => (
             <div key={appointment._id} className="appointment-card">
+
               <div className="appointment-header">
-                <div className="appointment-status" style={{ backgroundColor: getStatusColor(appointment.status) }}>
+                <div 
+                  className="appointment-status" 
+                  style={{ backgroundColor: getStatusColor(appointment.status) }}
+                >
                   {getStatusIcon(appointment.status)} {appointment.status.toUpperCase()}
                 </div>
                 <div className="appointment-date">
@@ -172,6 +190,7 @@ const AppointmentList = () => {
               </div>
 
               <div className="appointment-body">
+
                 <div className="appointment-detail">
                   <span className="detail-label">Service:</span>
                   <span className="detail-value">{appointment.service?.name}</span>
@@ -191,20 +210,26 @@ const AppointmentList = () => {
 
                 <div className="appointment-detail">
                   <span className="detail-label">Duration:</span>
-                  <span className="detail-value">{appointment.service?.duration} minutes</span>
+                  <span className="detail-value">
+                    {appointment.service?.duration} minutes
+                  </span>
                 </div>
 
                 <div className="appointment-detail">
                   <span className="detail-label">Price:</span>
-                  <span className="detail-value price">Rs.{appointment.amount || appointment.service?.price}</span>
+                  <span className="detail-value price">
+                    Rs.{appointment.amount || appointment.service?.price}
+                  </span>
                 </div>
 
-                {/* Payment Information */}
+                {/* Payment Info */}
                 <div className="payment-info-section">
+
                   <div className="appointment-detail">
                     <span className="detail-label">Payment Method:</span>
                     <span className="payment-method-badge">
-                      {getPaymentMethodIcon(appointment.paymentMethod)} {appointment.paymentMethod === 'cash' ? 'Cash' : 'Online'}
+                      {getPaymentMethodIcon(appointment.paymentMethod)}{" "}
+                      {appointment.paymentMethod === 'cash' ? 'Cash' : 'Online'}
                     </span>
                   </div>
 
@@ -214,37 +239,29 @@ const AppointmentList = () => {
                       className="payment-status-badge" 
                       style={{ backgroundColor: getPaymentStatusColor(appointment.paymentStatus) }}
                     >
-                      {getPaymentStatusIcon(appointment.paymentStatus)} {appointment.paymentStatus?.toUpperCase() || 'PENDING'}
+                      {getPaymentStatusIcon(appointment.paymentStatus)}{" "}
+                      {appointment.paymentStatus?.toUpperCase() || 'PENDING'}
                     </span>
                   </div>
 
                   {appointment.paymentStatus === 'paid' && appointment.paidAt && (
                     <div className="appointment-detail">
                       <span className="detail-label">Paid At:</span>
-                      <span className="detail-value">{new Date(appointment.paidAt).toLocaleString()}</span>
+                      <span className="detail-value">
+                        {new Date(appointment.paidAt).toLocaleString()}
+                      </span>
                     </div>
                   )}
+
                 </div>
 
-                {appointment.notes && (
-                  <div className="appointment-notes">
-                    <span className="detail-label">Notes:</span>
-                    <p>{appointment.notes}</p>
-                  </div>
-                )}
-
-                {user?.role === 'customer' && (
-                  <div className="appointment-customer-info">
-                    <span className="detail-label">Customer:</span>
-                    <span className="detail-value">{appointment.customer?.name}</span>
-                  </div>
-                )}
               </div>
 
               <div className="appointment-actions">
+
                 {appointment.status === 'pending' && (
                   <>
-                    {user?.role === 'staff' || user?.role === 'admin' ? (
+                    {(user?.role === 'staff' || user?.role === 'admin') ? (
                       <>
                         <button
                           onClick={() => handleUpdateStatus(appointment._id, 'confirmed')}
@@ -270,7 +287,8 @@ const AppointmentList = () => {
                   </>
                 )}
 
-                {appointment.status === 'confirmed' && (user?.role === 'staff' || user?.role === 'admin') && (
+                {appointment.status === 'confirmed' && 
+                 (user?.role === 'staff' || user?.role === 'admin') && (
                   <button
                     onClick={() => handleUpdateStatus(appointment._id, 'completed')}
                     className="action-button complete-button"
@@ -279,9 +297,8 @@ const AppointmentList = () => {
                   </button>
                 )}
 
-                {/* Mark Cash Payment as Paid Button */}
-                {(user?.role === 'staff' || user?.role === 'admin') && 
-                 appointment.paymentMethod === 'cash' && 
+                {(user?.role === 'staff' || user?.role === 'admin') &&
+                 appointment.paymentMethod === 'cash' &&
                  appointment.paymentStatus === 'pending' && (
                   <button
                     onClick={() => handleMarkAsPaid(appointment._id)}
@@ -290,7 +307,9 @@ const AppointmentList = () => {
                     💵 Mark Cash as Paid
                   </button>
                 )}
+
               </div>
+
             </div>
           ))}
         </div>
