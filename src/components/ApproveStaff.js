@@ -2,6 +2,8 @@ import React, { useEffect, useState, useCallback } from "react";
 import axios from "axios";
 import "./ApproveStaff.css";
 
+const API_BASE_URL = "https://appointment-backend-wpie.vercel.app/api";
+
 const ApproveStaff = () => {
   const [pendingStaff, setPendingStaff] = useState([]);
   const [approvedStaff, setApprovedStaff] = useState([]);
@@ -10,13 +12,23 @@ const ApproveStaff = () => {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [selectedSpecializations, setSelectedSpecializations] = useState({});
+  
+  // Edit modal state
+  const [editingStaff, setEditingStaff] = useState(null);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editForm, setEditForm] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    specialization: "",
+  });
 
   const token = localStorage.getItem("token");
 
   const fetchPendingStaff = useCallback(async () => {
     try {
       const response = await axios.get(
-        "https://appointment-backend-wpie.vercel.app/api/users/staff/pending",
+        `${API_BASE_URL}/users/staff/pending`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setPendingStaff(response.data);
@@ -32,7 +44,7 @@ const ApproveStaff = () => {
   const fetchApprovedStaff = useCallback(async () => {
     try {
       const response = await axios.get(
-        "https://appointment-backend-wpie.vercel.app/api/users/staff",
+        `${API_BASE_URL}/users/staff`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setApprovedStaff(response.data);
@@ -43,9 +55,7 @@ const ApproveStaff = () => {
 
   const fetchServices = useCallback(async () => {
     try {
-      const response = await axios.get(
-        "https://appointment-backend-wpie.vercel.app/api/services"
-      );
+      const response = await axios.get(`${API_BASE_URL}/services`);
       setServices(response.data);
     } catch (err) {
       console.error("Error fetching services:", err);
@@ -78,7 +88,7 @@ const ApproveStaff = () => {
 
     try {
       await axios.put(
-        `https://appointment-backend-wpie.vercel.app/api/users/staff/${staffId}/approve`,
+        `${API_BASE_URL}/users/staff/${staffId}/approve`,
         { specialization },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -86,9 +96,11 @@ const ApproveStaff = () => {
       setSuccess(`✅ ${staffName} has been approved as ${specialization} staff!`);
       setTimeout(() => setSuccess(""), 3000);
 
+      // Refresh both lists
       fetchPendingStaff();
       fetchApprovedStaff();
 
+      // Clear the selection for this staff
       const newSelections = { ...selectedSpecializations };
       delete newSelections[staffId];
       setSelectedSpecializations(newSelections);
@@ -109,18 +121,95 @@ const ApproveStaff = () => {
 
     try {
       await axios.put(
-        `https://appointment-backend-wpie.vercel.app/api/users/staff/${staffId}/reject`,
+        `${API_BASE_URL}/users/staff/${staffId}/reject`,
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      setSuccess(`${staffName} has been rejected`);
+      setSuccess(`${staffName} has been rejected and removed`);
       setTimeout(() => setSuccess(""), 3000);
 
       fetchPendingStaff();
     } catch (err) {
       console.error("Error rejecting staff:", err);
       setError("Failed to reject staff");
+      setTimeout(() => setError(""), 3000);
+    }
+  };
+
+  // Open edit modal
+  const handleEdit = (staff) => {
+    setEditingStaff(staff);
+    setEditForm({
+      name: staff.name,
+      email: staff.email,
+      // phone: staff.phone || "",
+      phone: staff.phone,
+      specialization: staff.specialization || "",
+    });
+    setShowEditModal(true);
+  };
+
+  // Handle form input changes
+  const handleEditFormChange = (e) => {
+    const { name, value } = e.target;
+    setEditForm({
+      ...editForm,
+      [name]: value,
+    });
+  };
+
+  // Submit edit form
+  const handleUpdateStaff = async (e) => {
+    e.preventDefault();
+
+    try {
+      await axios.put(
+        `${API_BASE_URL}/users/staff/${editingStaff._id}`,
+        editForm,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      setSuccess("Staff member updated successfully!");
+      setTimeout(() => setSuccess(""), 3000);
+
+      setShowEditModal(false);
+      setEditingStaff(null);
+      fetchApprovedStaff();
+    } catch (err) {
+      console.error("Error updating staff:", err);
+      setError(
+        "Failed to update staff. " +
+          (err.response?.data?.message || err.message)
+      );
+      setTimeout(() => setError(""), 3000);
+    }
+  };
+
+  // Delete staff member
+  const handleDelete = async (staffId, staffName) => {
+    if (
+      !window.confirm(
+        `Delete ${staffName}?\n\nThis action cannot be undone. The staff member will be permanently removed from the database.`
+      )
+    ) {
+      return;
+    }
+
+    try {
+      await axios.delete(`${API_BASE_URL}/users/staff/${staffId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      setSuccess(`${staffName} has been deleted successfully`);
+      setTimeout(() => setSuccess(""), 3000);
+
+      fetchApprovedStaff();
+    } catch (err) {
+      console.error("Error deleting staff:", err);
+      setError(
+        err.response?.data?.message || "Failed to delete staff member"
+      );
       setTimeout(() => setError(""), 3000);
     }
   };
@@ -136,7 +225,7 @@ const ApproveStaff = () => {
   return (
     <div className="approve-staff-container">
       <div className="page-header">
-        <h1>👥 Staff Approval Management</h1>
+        <h1>👥 Staff Management</h1>
         <p>Review and approve new staff member registrations</p>
       </div>
 
@@ -251,8 +340,9 @@ const ApproveStaff = () => {
                 <tr>
                   <th>Staff Name</th>
                   <th>Email</th>
+                  <th>Phone</th>
                   <th>Specialization</th>
-                  <th>Status</th>
+                  <th>Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -262,13 +352,27 @@ const ApproveStaff = () => {
                       <strong>{staff.name}</strong>
                     </td>
                     <td>{staff.email}</td>
+                    <td>{staff.phone || "N/A"}</td>
                     <td>
                       <span className="specialization-badge">
                         {staff.specialization || "Not Set"}
                       </span>
                     </td>
                     <td>
-                      <span className="status-badge status-active">Active</span>
+                      <div className="action-buttons">
+                        <button
+                          className="btn-edit"
+                          onClick={() => handleEdit(staff)}
+                        >
+                          ✏️ Edit
+                        </button>
+                        <button
+                          className="btn-delete"
+                          onClick={() => handleDelete(staff._id, staff.name)}
+                        >
+                          🗑️ Delete
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -277,6 +381,90 @@ const ApproveStaff = () => {
           </div>
         )}
       </div>
+
+      {/* EDIT MODAL */}
+      {showEditModal && (
+        <div className="modal-overlay" onClick={() => setShowEditModal(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>✏️ Edit Staff Member</h2>
+              <button
+                className="close-btn"
+                onClick={() => setShowEditModal(false)}
+              >
+                ×
+              </button>
+            </div>
+
+            <form onSubmit={handleUpdateStaff}>
+              <div className="form-group">
+                <label>Full Name *</label>
+                <input
+                  type="text"
+                  name="name"
+                  value={editForm.name}
+                  onChange={handleEditFormChange}
+                  required
+                />
+              </div>
+
+              <div className="form-group">
+                <label>Email *</label>
+                <input
+                  type="email"
+                  name="email"
+                  value={editForm.email}
+                  onChange={handleEditFormChange}
+                  required
+                />
+              </div>
+
+              <div className="form-group">
+                <label>Phone *</label>
+                <input
+                  type="tel"
+                  name="phone"
+                  value={editForm.phone}
+                  onChange={handleEditFormChange}
+                  // placeholder="0771234567"
+                  required
+                />
+              </div>
+
+              <div className="form-group">
+                <label>Specialization *</label>
+                <select
+                  name="specialization"
+                  value={editForm.specialization}
+                  onChange={handleEditFormChange}
+                  required
+                  className="category-dropdown"
+                >
+                  <option value="">-- Select Specialization --</option>
+                  {services.map((service) => (
+                    <option key={service._id} value={service.name}>
+                      {service.name} ({service.category})
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="modal-actions">
+                <button
+                  type="button"
+                  className="btn-cancel"
+                  onClick={() => setShowEditModal(false)}
+                >
+                  Cancel
+                </button>
+                <button type="submit" className="btn-save">
+                  💾 Save Changes
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

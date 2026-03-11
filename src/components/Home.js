@@ -84,25 +84,25 @@ const Home = () => {
           <div className="service-preview-card">
             <h3>✂️ Haircut & Styling</h3>
             <p>Professional cuts and styling for all hair types</p>
-            <span className="price">Starting at Rs.50</span>
+            <span className="price">Starting at Rs.1500</span>
           </div>
 
           <div className="service-preview-card">
             <h3>🎨 Hair Coloring</h3>
             <p>Expert coloring, highlights, and balayage</p>
-            <span className="price">Starting at Rs.80</span>
+            <span className="price">Starting at Rs.2000</span>
           </div>
 
           <div className="service-preview-card">
             <h3>💆 Facial Treatment</h3>
             <p>Rejuvenating facials for glowing skin</p>
-            <span className="price">Starting at Rs.60</span>
+            <span className="price">Starting at Rs.2500</span>
           </div>
 
           <div className="service-preview-card">
             <h3>💅 Manicure & Pedicure</h3>
             <p>Pamper your hands and feet</p>
-            <span className="price">Starting at Rs.40</span>
+            <span className="price">Starting at Rs.1500</span>
           </div>
         </div>
 
