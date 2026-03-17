@@ -71,6 +71,9 @@ const Navbar = () => {
                   <li className="navbar-item">
                     <Link to="/config" className="navbar-link">⚙️ Settings</Link>
                   </li>
+                  <li className="navbar-item">
+                    <Link to="/user-management" className="navbar-link">Manage Users</Link>
+                  </li>
                 </>
               )}
 

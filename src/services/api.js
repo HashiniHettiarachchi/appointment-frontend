@@ -59,6 +59,9 @@ export const usersAPI = {
   rejectStaff: (id) => api.put(`/users/staff/${id}/reject`),
   updateSpecialization: (id, data) => api.put(`/users/staff/${id}/specialization`, data),
   getAll: () => api.get('/users'),
+  create:    (data) => api.post('/users', data),
+  update:    (id, data) => api.put(`/users/${id}`, data),
+  delete:    (id) => api.delete(`/users/${id}`),
   getById: (id) => api.get(`/users/${id}`),
   update: (id, userData) => api.put(`/users/${id}`, userData),
 };

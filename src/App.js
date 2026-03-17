@@ -10,6 +10,7 @@ import BookAppointment from './components/BookAppointment';
 import AppointmentList from './components/AppointmentList';
 import AdminDashboard from './components/AdminDashboard';
 import ApproveStaff from './components/ApproveStaff';
+import UserManagement from './components/Usermanagement';
 import Payment from './components/Payment';
 import Reports from './components/Reports';
 import { ConfigProvider } from './context/ConfigContext'; 
@@ -91,6 +92,15 @@ function AppContent() {
               </ProtectedRoute>
             }
           />
+          <Route
+            path="/user-management"
+            element={
+              <ProtectedRoute adminOnly={true}>
+                <UserManagement />
+              </ProtectedRoute>
+            }
+          />
+
           <Route
             path="/reports"
             element={
