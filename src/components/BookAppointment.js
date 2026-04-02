@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import axios from 'axios';
 import { servicesAPI, appointmentsAPI, usersAPI } from '../services/api';
 import './BookAppointment.css';
 
@@ -46,21 +47,18 @@ function MiniCalendar({ selectedDate, onDateSelect, holidays, loadingHolidays })
     else setViewMonth(m => m + 1);
   };
 
-  // Build grid cells (nulls = empty leading cells)
   const cells = [];
   for (let i = 0; i < firstDay; i++) cells.push(null);
   for (let d = 1; d <= daysInMonth; d++) cells.push(d);
 
   return (
     <div className="mini-calendar">
-      {/* Month navigation */}
       <div className="cal-header">
         <button type="button" className="cal-nav" onClick={prevMonth}>‹</button>
         <span className="cal-month-title">{MONTH_NAMES[viewMonth]} {viewYear}</span>
         <button type="button" className="cal-nav" onClick={nextMonth}>›</button>
       </div>
 
-      {/* Loading indicator */}
       {loadingHolidays && (
         <div className="cal-loading">
           <span className="cal-spinner" />
@@ -68,28 +66,26 @@ function MiniCalendar({ selectedDate, onDateSelect, holidays, loadingHolidays })
         </div>
       )}
 
-      {/* Day headers */}
       <div className="cal-grid">
         {DAYS_OF_WEEK.map(d => (
           <div key={d} className="cal-day-header">{d}</div>
         ))}
 
-        {/* Day cells */}
         {cells.map((day, idx) => {
           if (!day) return <div key={`empty-${idx}`} className="cal-cell empty" />;
 
           const dateStr = toDateStr(viewYear, viewMonth, day);
-          const isPast     = dateStr < todayStr;
-          const isToday    = dateStr === todayStr;
-          const isSelected = dateStr === selectedDate;
+          const isPast      = dateStr < todayStr;
+          const isToday     = dateStr === todayStr;
+          const isSelected  = dateStr === selectedDate;
           const holidayName = holidays[dateStr];
-          const isHoliday  = Boolean(holidayName);
+          const isHoliday   = Boolean(holidayName);
 
           let cls = 'cal-cell';
-          if (isPast)     cls += ' past';
-          else if (isHoliday) cls += ' blocked';
-          if (isToday)    cls += ' today';
-          if (isSelected) cls += ' selected';
+          if (isPast)          cls += ' past';
+          else if (isHoliday)  cls += ' blocked';
+          if (isToday)         cls += ' today';
+          if (isSelected)      cls += ' selected';
 
           return (
             <div
@@ -107,7 +103,6 @@ function MiniCalendar({ selectedDate, onDateSelect, holidays, loadingHolidays })
         })}
       </div>
 
-      {/* Legend */}
       <div className="cal-legend">
         <span className="legend-item">
           <span className="legend-dot blocked-dot" /> Poya / Public Holiday
@@ -128,16 +123,13 @@ const BookAppointment = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
-  // ── State ──
-  const [services, setServices]           = useState([]);
-  const [staff, setStaff]                 = useState([]);
-  const [loadingStaff, setLoadingStaff]   = useState(true);
-  const [showCalendar, setShowCalendar]   = useState(false);
-
-  // Holidays fetched from backend /api/holidays
-  const [holidays, setHolidays]               = useState({});
+  const [services, setServices]             = useState([]);
+  const [staff, setStaff]                   = useState([]);
+  const [loadingStaff, setLoadingStaff]     = useState(true);
+  const [showCalendar, setShowCalendar]     = useState(false);
+  const [holidays, setHolidays]             = useState({});
   const [loadingHolidays, setLoadingHolidays] = useState(true);
-  const [holidayError, setHolidayError]       = useState('');
+  const [holidayError, setHolidayError]     = useState('');
 
   const [formData, setFormData] = useState({
     service:         location.state?.service?._id || '',
@@ -153,16 +145,13 @@ const BookAppointment = () => {
   const [error, setError]     = useState('');
   const [success, setSuccess] = useState('');
 
-  // ── Fetch holidays from backend ──
+  // ✅ FIX 3: correct axios usage — response.data, no .ok or .json()
   const fetchHolidays = useCallback(async () => {
     try {
       setLoadingHolidays(true);
       setHolidayError('');
-      // const response = await fetch('/api/holidays');
       const response = await axios.get(`${API_BASE_URL}/holidays`);
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      const data = await response.json();
-      setHolidays(data);
+      setHolidays(response.data); // ✅ axios puts data in response.data directly
     } catch (err) {
       console.error('Failed to fetch holidays:', err);
       setHolidayError('Could not load holiday data. Some dates may not be blocked.');
@@ -171,14 +160,12 @@ const BookAppointment = () => {
     }
   }, []);
 
-  // ── On mount ──
   useEffect(() => {
     fetchServices();
     fetchStaff();
     fetchHolidays();
   }, [fetchHolidays]);
 
-  // ── Auto-calculate end time based on service duration ──
   useEffect(() => {
     if (formData.service && formData.startTime) {
       const selectedService = services.find(s => s._id === formData.service);
@@ -196,7 +183,6 @@ const BookAppointment = () => {
     }
   }, [formData.service, formData.startTime, services]);
 
-  // ── API calls ──
   const fetchServices = async () => {
     try {
       const response = await servicesAPI.getAll();
@@ -218,7 +204,6 @@ const BookAppointment = () => {
     }
   };
 
-  // ── Handlers ──
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
     setError('');
@@ -236,7 +221,6 @@ const BookAppointment = () => {
     setError('');
     setSuccess('');
 
-    // Validation
     if (!formData.service || !formData.staff || !formData.appointmentDate) {
       setError('Please fill in all required fields');
       setLoading(false);
@@ -250,7 +234,6 @@ const BookAppointment = () => {
       return;
     }
 
-    // Block holidays even if UI is bypassed
     if (holidays[formData.appointmentDate]) {
       setError(`This date is a public holiday (${holidays[formData.appointmentDate]}) and cannot be booked.`);
       setLoading(false);
@@ -261,24 +244,19 @@ const BookAppointment = () => {
       const selectedService = services.find(s => s._id === formData.service);
       const amount = selectedService?.price || 0;
 
-      const appointmentData = {
+      const response = await appointmentsAPI.create({
         ...formData,
         amount,
         paymentMethod: formData.paymentMethod || 'cash',
-      };
+      });
 
-      const response = await appointmentsAPI.create(appointmentData);
       const appointmentId = response.data.appointment._id;
 
       if (formData.paymentMethod === 'online') {
         setSuccess('Redirecting to payment...');
         setTimeout(() => {
           navigate('/payment', {
-            state: {
-              appointmentId,
-              amount,
-              serviceName: selectedService.name,
-            },
+            state: { appointmentId, amount, serviceName: selectedService.name },
           });
         }, 1000);
       } else {
@@ -292,7 +270,6 @@ const BookAppointment = () => {
     }
   };
 
-  // ── Time slots (9am to 6pm, every 30 mins) ──
   const timeSlots = [];
   for (let hour = 9; hour <= 18; hour++) {
     for (let minute = 0; minute < 60; minute += 30) {
@@ -306,20 +283,19 @@ const BookAppointment = () => {
     ? holidays[formData.appointmentDate]
     : null;
 
-  // ── Render ──
   return (
     <div className="booking-container">
       <div className="booking-card">
         <h2 className="booking-title">📅 Book Your Appointment</h2>
         <p className="booking-subtitle">Fill in the details below to schedule your visit</p>
 
-        {error         && <div className="error-message">{error}</div>}
-        {success       && <div className="success-message">{success}</div>}
-        {holidayError  && <div className="warning-message">⚠️ {holidayError}</div>}
+        {error        && <div className="error-message">{error}</div>}
+        {success      && <div className="success-message">{success}</div>}
+        {holidayError && <div className="warning-message">⚠️ {holidayError}</div>}
 
         <form onSubmit={handleSubmit} className="booking-form">
 
-          {/* ── Service ── */}
+          {/* Service */}
           <div className="form-group">
             <label htmlFor="service">Select Service *</label>
             <select
@@ -336,7 +312,7 @@ const BookAppointment = () => {
             </select>
           </div>
 
-          {/* ── Staff ── */}
+          {/* Staff */}
           <div className="form-group">
             <label htmlFor="staff">Select Staff Member *</label>
             <select
@@ -363,12 +339,10 @@ const BookAppointment = () => {
             )}
           </div>
 
-          {/* ── Date picker with Sri Lanka Holiday Calendar ── */}
+          {/* Date picker */}
           <div className="form-group">
             <label>Appointment Date *</label>
-
             <div className="date-picker-wrapper">
-              {/* Trigger button */}
               <button
                 type="button"
                 className={`date-trigger ${formData.appointmentDate ? 'has-date' : ''}`}
@@ -383,7 +357,6 @@ const BookAppointment = () => {
                 <span className="date-trigger-arrow">{showCalendar ? '▲' : '▼'}</span>
               </button>
 
-              {/* Calendar dropdown */}
               {showCalendar && (
                 <div className="calendar-dropdown">
                   <MiniCalendar
@@ -400,7 +373,6 @@ const BookAppointment = () => {
               )}
             </div>
 
-            {/* Show holiday name if selected date is a holiday */}
             {selectedHolidayName && (
               <small className="form-help error">
                 ⚠️ {selectedHolidayName} — this date is unavailable for booking.
@@ -408,7 +380,7 @@ const BookAppointment = () => {
             )}
           </div>
 
-          {/* ── Time ── */}
+          {/* Time */}
           <div className="form-row">
             <div className="form-group">
               <label htmlFor="startTime">Start Time *</label>
@@ -426,16 +398,14 @@ const BookAppointment = () => {
             <div className="form-group">
               <label htmlFor="endTime">End Time</label>
               <input
-                type="time"
-                id="endTime" name="endTime"
-                value={formData.endTime}
-                readOnly className="form-input"
+                type="time" id="endTime" name="endTime"
+                value={formData.endTime} readOnly className="form-input"
               />
               <small className="form-help">Auto-calculated based on service duration</small>
             </div>
           </div>
 
-          {/* ── Notes ── */}
+          {/* Notes */}
           <div className="form-group">
             <label htmlFor="notes">Special Notes (Optional)</label>
             <textarea
@@ -447,19 +417,17 @@ const BookAppointment = () => {
             />
           </div>
 
-          {/* ── Payment Method ── */}
+          {/* Payment */}
           <div className="form-group payment-section">
             <label className="section-label">💳 Payment Method</label>
             <div className="payment-options">
-
               <div
                 className={`payment-option ${formData.paymentMethod === 'cash' ? 'selected' : ''}`}
                 onClick={() => setFormData({ ...formData, paymentMethod: 'cash' })}
               >
                 <input
                   type="radio" name="paymentMethod" value="cash"
-                  checked={formData.paymentMethod === 'cash'}
-                  onChange={handleChange}
+                  checked={formData.paymentMethod === 'cash'} onChange={handleChange}
                 />
                 <div className="payment-content">
                   <span className="payment-icon">💵</span>
@@ -476,8 +444,7 @@ const BookAppointment = () => {
               >
                 <input
                   type="radio" name="paymentMethod" value="online"
-                  checked={formData.paymentMethod === 'online'}
-                  onChange={handleChange}
+                  checked={formData.paymentMethod === 'online'} onChange={handleChange}
                 />
                 <div className="payment-content">
                   <span className="payment-icon">💳</span>
@@ -487,11 +454,10 @@ const BookAppointment = () => {
                   </div>
                 </div>
               </div>
-
             </div>
           </div>
 
-          {/* ── Actions ── */}
+          {/* Actions */}
           <div className="form-actions">
             <button type="button" onClick={() => navigate(-1)} className="cancel-button">
               Cancel
