@@ -3,6 +3,8 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { servicesAPI, appointmentsAPI, usersAPI } from '../services/api';
 import './BookAppointment.css';
 
+const API_BASE_URL = "https://appointment-backend-wpie.vercel.app/api";
+
 // ─── Calendar Helpers ──────────────────────────────────────────────────────────
 const DAYS_OF_WEEK = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const MONTH_NAMES = [
