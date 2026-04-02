@@ -159,7 +159,7 @@ const BookAppointment = () => {
       setLoadingHolidays(true);
       setHolidayError('');
       // const response = await fetch('/api/holidays');
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/holidays`);
+      const response = await axios.get(`${API_BASE_URL}/holidays`);
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
       const data = await response.json();
       setHolidays(data);
