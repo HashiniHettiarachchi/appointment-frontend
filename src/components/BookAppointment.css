@@ -1,3 +1,5 @@
+/* ── Your original styles ────────────────────────────────────────────────── */
+
 .booking-container {
   min-height: calc(100vh - 80px);
   padding: 2rem;
@@ -32,6 +34,34 @@
   gap: 1.5rem;
 }
 
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.form-group label {
+  font-weight: 600;
+  color: #444;
+  font-size: 0.95rem;
+}
+
+.form-input {
+  padding: 0.75rem 1rem;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: border-color 0.2s;
+  background: #fafafa;
+  color: #333;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: #667eea;
+  background: white;
+}
+
 .form-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -57,7 +87,40 @@
   font-family: inherit;
 }
 
-/* Payment Section */
+/* ── Messages ─────────────────────────────────────────────────────────────── */
+
+.error-message {
+  background: #fff0f0;
+  border: 1px solid #f44336;
+  color: #c62828;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  font-size: 0.95rem;
+}
+
+.success-message {
+  background: #f0fff4;
+  border: 1px solid #4caf50;
+  color: #2e7d32;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  font-size: 0.95rem;
+}
+
+.warning-message {
+  background: #fffde7;
+  border: 1px solid #ffc107;
+  color: #f57f17;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+}
+
+/* ── Payment Section ──────────────────────────────────────────────────────── */
+
 .payment-section {
   margin-top: 2rem;
   padding-top: 2rem;
@@ -130,6 +193,7 @@
   margin: 0;
 }
 
+/* ── Form Actions ─────────────────────────────────────────────────────────── */
 
 .form-actions {
   display: flex;
@@ -154,20 +218,302 @@
   background-color: #e0e0e0;
 }
 
+.submit-button {
+  flex: 2;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  padding: 1rem;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.submit-button:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+}
+
+.submit-button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* ── NEW: Date Picker Trigger Button ──────────────────────────────────────── */
+
+.date-picker-wrapper {
+  position: relative;
+}
+
+.date-trigger {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.75rem 1rem;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  background: #fafafa;
+  cursor: pointer;
+  font-size: 1rem;
+  color: #aaa;
+  text-align: left;
+  transition: all 0.2s;
+}
+
+.date-trigger.has-date {
+  color: #333;
+  border-color: #667eea;
+  background: white;
+}
+
+.date-trigger:hover {
+  border-color: #667eea;
+  background: white;
+}
+
+.date-trigger-icon { font-size: 1.1rem; }
+.date-trigger-text { flex: 1; }
+.date-trigger-arrow { font-size: 0.7rem; color: #999; }
+
+/* ── NEW: Calendar Dropdown ───────────────────────────────────────────────── */
+
+.calendar-dropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 100;
+  background: white;
+  border: 2px solid #e0e0e0;
+  border-radius: 12px;
+  padding: 1rem;
+  box-shadow: 0 8px 32px rgba(102, 126, 234, 0.15);
+  min-width: 320px;
+  animation: dropIn 0.18s ease;
+}
+
+@keyframes dropIn {
+  from { opacity: 0; transform: translateY(-8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── NEW: Mini Calendar Internals ─────────────────────────────────────────── */
+
+.mini-calendar {
+  user-select: none;
+}
+
+.cal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+}
+
+.cal-month-title {
+  font-weight: 700;
+  font-size: 1rem;
+  color: #333;
+}
+
+.cal-nav {
+  background: none;
+  border: none;
+  font-size: 1.3rem;
+  color: #667eea;
+  cursor: pointer;
+  padding: 0 0.4rem;
+  border-radius: 4px;
+  transition: background 0.15s;
+  line-height: 1;
+}
+
+.cal-nav:hover {
+  background: #f0f2ff;
+}
+
+/* Loading */
+.cal-loading {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.82rem;
+  color: #667eea;
+  margin-bottom: 0.5rem;
+}
+
+.cal-spinner {
+  width: 12px;
+  height: 12px;
+  border: 2px solid #e0e0e0;
+  border-top-color: #667eea;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  display: inline-block;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Grid */
+.cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+}
+
+.cal-day-header {
+  text-align: center;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #999;
+  padding: 0.3rem 0;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.cal-cell {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 36px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.88rem;
+  color: #333;
+  transition: background 0.15s, color 0.15s;
+}
+
+/* Hoverable normal dates */
+.cal-cell:not(.empty):not(.past):not(.blocked):hover {
+  background: #f0f2ff;
+  color: #667eea;
+}
+
+/* Past dates — greyed out, not clickable */
+.cal-cell.past {
+  color: #ccc;
+  cursor: not-allowed;
+}
+
+/* Holiday / Poya dates — red, not clickable */
+.cal-cell.blocked {
+  background: #fff5f5;
+  color: #e53935;
+  cursor: not-allowed;
+  font-weight: 600;
+}
+
+.cal-cell.blocked:hover {
+  background: #ffebee;
+}
+
+/* Today indicator — blue dot under number */
+.cal-cell.today .day-number::after {
+  content: '';
+  display: block;
+  width: 4px;
+  height: 4px;
+  background: #667eea;
+  border-radius: 50%;
+  margin: 1px auto 0;
+}
+
+/* Selected date */
+.cal-cell.selected {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white !important;
+  font-weight: 700;
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.4);
+}
+
+.cal-cell.selected .holiday-dot { display: none; }
+.cal-cell.empty { cursor: default; }
+
+.day-number { line-height: 1; }
+
+/* Small red dot on holiday cells */
+.holiday-dot {
+  position: absolute;
+  bottom: 3px;
+  width: 4px;
+  height: 4px;
+  background: #e53935;
+  border-radius: 50%;
+}
+
+/* ── NEW: Calendar Legend ──────────────────────────────────────────────────── */
+
+.cal-legend {
+  display: flex;
+  gap: 1rem;
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid #f0f0f0;
+  flex-wrap: wrap;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.75rem;
+  color: #666;
+}
+
+.legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.blocked-dot  { background: #e53935; }
+.today-dot    { background: #667eea; }
+.selected-dot { background: #764ba2; }
+
+/* ── NEW: Holiday Info Box ─────────────────────────────────────────────────── */
+
+.holiday-info-box {
+  margin-top: 0.75rem;
+  padding: 0.6rem 0.8rem;
+  background: #fff5f5;
+  border: 1px solid #ffcdd2;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  color: #c62828;
+}
+
+.holiday-info-box strong {
+  display: block;
+  margin-bottom: 0.2rem;
+  font-size: 0.83rem;
+}
+
+.holiday-info-box p { margin: 0; }
+
+/* ── Responsive ───────────────────────────────────────────────────────────── */
+
 @media (max-width: 768px) {
-  .booking-card {
-    padding: 1.5rem;
-  }
+  .booking-card   { padding: 1.5rem; }
+  .booking-title  { font-size: 1.5rem; }
+  .form-row       { grid-template-columns: 1fr; }
+  .form-actions   { flex-direction: column; }
+  .payment-options { grid-template-columns: 1fr; }
 
-  .booking-title {
-    font-size: 1.5rem;
-  }
-
-  .form-row {
-    grid-template-columns: 1fr;
-  }
-
-  .form-actions {
-    flex-direction: column;
+  /* On mobile, show calendar as centered overlay */
+  .calendar-dropdown {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 320px;
+    z-index: 200;
+    animation: none;
   }
 }
